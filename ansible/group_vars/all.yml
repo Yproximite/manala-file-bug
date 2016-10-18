@@ -1,0 +1,91 @@
+---
+
+wkhtmltopdf_version_main: "0.12"
+wkhtmltopdf_version_full: "0.12.2.1"
+wkhtmltopdf_architecture: "amd64"
+
+mysql_packages:
+  - mariadb-client
+  - mariadb-server
+  - python-mysqldb
+
+mysql_root_password: ''
+
+mysql_key_buffer_size: "256M"
+
+mysql_max_allowed_packet: "1024M"
+mysql_table_open_cache: "256"
+mysql_innodb_buffer_pool_size: "1024M"
+mysql_innodb_log_file_size: "256M"
+
+app_options:
+
+  php_version:           '7.0'
+  nodejs_version:        '6'
+  mysql:                 false
+  elasticsearch:         false
+  redis:                 true
+  nginx:                 true
+
+app_patterns:
+  timezone_default: Etc/UTC
+
+  environment_variables:
+    - SYMFONY_ENV:           "{{ app.env }}"
+    - APP_SECRET:            "{{ ansible_date_time.iso8601_micro|hash('sha256') }}"
+    - APP_DATABASE_HOST:     127.0.0.1
+    - APP_DATABASE_PORT:     null
+    - APP_DATABASE_NAME:     yprox
+    - APP_DATABASE_USER:     yprox
+    - APP_DATABASE_PASSWORD: null
+    - VAGRANT:               1
+
+  #######
+  # Npm #
+  #######
+
+  npm_packages:
+    - package:    gulp
+
+  #######
+  # Php #
+  #######
+
+  php_extensions:
+    # Symfony
+    - intl
+    - curl
+    - apcu
+    - apcu-bc
+    - mcrypt
+    - mysql
+    - mbstring
+    - xml
+    # composer
+    - zip
+    # app
+    - gd
+
+  php_configs:
+    - file: app_opcache.ini
+      template: configs/app_opcache.{{ env }}.j2
+    - file: app.ini
+      template: configs/app.{{ env }}.j2
+      config:
+        - date.timezone: UTC
+        - memory_limit: 2048M
+
+  #########
+  # Nginx #
+  #########
+
+  nginx_configs:
+    # Php fpm
+    - file:     app_php_fpm
+      template: configs/app_php_fpm.{{ env }}.j2
+    # Gzip
+    - file:     app_gzip
+      template: configs/app_gzip.{{ env }}.j2
+
+
+

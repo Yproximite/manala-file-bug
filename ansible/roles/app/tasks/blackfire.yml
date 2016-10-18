@@ -1,0 +1,25 @@
+---
+
+- name: repositories key
+  apt_key: >
+    url=https://packagecloud.io/gpg.key
+    state=present
+  become_user: root
+
+- name: repositories
+  apt_repository: >
+    repo="{{ item }}"
+    state=present
+    update_cache=yes
+  with_items:
+    - deb http://packages.blackfire.io/debian any main
+  become_user: root
+
+- name: packages
+  apt: >
+    name={{ item }}
+    state=present
+  with_items:
+    - blackfire-agent
+    - blackfire-php
+  become_user: root

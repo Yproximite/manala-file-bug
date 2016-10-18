@@ -1,0 +1,13 @@
+
+- debug: var=db_reset|bool
+
+- mysql_db: name=yprox state=present
+
+- stat: path=/srv/database/yprox.sql.gz
+  register: db
+
+- mysql_db: >
+    state=import
+    name=yprox
+    target=/srv/database/yprox.sql.gz
+  when: db_reset|bool == true and db.stat.exists == true
