@@ -1,18 +1,20 @@
-- hosts: all
-  become: true
+---
+
+- hosts: app
+  vars:
+    # App
+    app: "{{ manala_skeleton_options.app }}"
+    # Manala
+    manala_skeleton_name: elao_app_php
+    manala_skeleton_env:  "{{ env }}"
+    manala_skeleton_options_hashes:
+      - app_options
+      - app_(\w*)_options
+    manala_skeleton_patterns_hashes:
+      - app_patterns
+      - app_(\w*)_patterns
   roles:
+    - manala.skeleton
     - aeriscloud.wkhtmltopdf
-    - geerlingguy.mysql
+    - common
     - mysql
-
-- hosts: all
-  become: yes
-  roles:
-      - { role: common }
-
-- hosts: all
-  become: yes
-  become_user: app
-  roles:
-      - { role: app }
-

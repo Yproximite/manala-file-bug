@@ -1,2 +1,9 @@
 ---
 - include: blackfire.yml
+
+- debug: var=yprox_db_host
+- debug: var=yprox_db_migrate
+- debug: var=yprox_www_directory
+- debug: var=yprox_build_directory
+- debug: var=yprox_version
+

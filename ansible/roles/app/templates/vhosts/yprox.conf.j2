@@ -1,1 +1,68 @@
 #{{ ansible_managed }}
+
+server {
+    listen 80;
+    server_name admin.yprox.dev;
+    root /srv/app/web;
+
+    location / {
+        sendfile off;
+        try_files $uri @rewriteapp;
+    }
+
+    location @rewriteapp {
+        rewrite ^(.*)$ /site.php/$1 last;
+    }
+
+    location ~ ^/(site|site_dev|admin|admin_dev|admin_behat|site_behat|bundles/sitemediamanager/jquery-uploadify/uploadify|util/apcmon|util/opcache)\.php(/|$) {
+        fastcgi_pass unix:/var/run/php-fpm.app.sock;
+        fastcgi_param VAGRANT 1;
+        fastcgi_split_path_info ^(.+\.php)(/.*)$;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param HTTPS off;
+        fastcgi_buffer_size 128k;
+        fastcgi_buffers 256 16k;
+        fastcgi_busy_buffers_size 256k;
+        fastcgi_temp_file_write_size 256k;
+        fastcgi_read_timeout 120s;
+        fastcgi_max_temp_file_size 0;
+    }
+
+    access_log /var/log/nginx/yproximite.access.log main;
+    error_log /var/log/nginx/yproximite.error.log;
+}
+
+server {
+    listen 80;
+    server_name api.yprox.dev;
+    root /srv/app/web;
+
+    location / {
+        sendfile off;
+        try_files $uri @rewriteapp;
+    }
+
+    location @rewriteapp {
+        rewrite ^(.*)$ /admin.php/$1 last;
+    }
+
+    location ~ ^/(site|site_dev|admin|admin_dev|admin_behat|site_behat|bundles/sitemediamanager/jquery-uploadify/uploadify|util/apcmon|util/opcache)\.php(/|$) {
+        fastcgi_pass unix:/var/run/php-fpm.app.sock;
+        fastcgi_param VAGRANT 1;
+        fastcgi_split_path_info ^(.+\.php)(/.*)$;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param HTTPS off;
+        fastcgi_buffer_size 128k;
+        fastcgi_buffers 256 16k;
+        fastcgi_busy_buffers_size 256k;
+        fastcgi_temp_file_write_size 256k;
+        fastcgi_read_timeout 120s;
+        fastcgi_max_temp_file_size 0;
+    }
+
+    access_log /var/log/nginx/yproximite_api_access.log main;
+    error_log /var/log/nginx/yproximite_api_error.log;
+}
+

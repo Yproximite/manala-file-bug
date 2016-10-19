@@ -1,14 +1,12 @@
-#!/usr/bin/env bash
-
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
 app = {
-  :name        => 'test-reproduction.dev',
+  :name        => 'admin2.yprox.dev',
   :box         => 'manala/app-dev-debian',
   :box_version => '~> 3.0.0',
-  :aliases     => ['test-reproduction.dev'],
-  :box_memory  => 4096
+  :box_memory  => 4096,
+  :aliases     => ['api.yprox.dev', 'admin.yprox.dev'],
 }
 
 Vagrant.require_version '>= 1.8.4'
@@ -19,56 +17,25 @@ Vagrant.configure(2) do |config|
   config.ssh.username      = 'app'
   config.ssh.forward_agent = true
 
-  module OS
-    def OS.windows?
-        (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
-    end
-
-    def OS.mac?
-        (/darwin/ =~ RUBY_PLATFORM) != nil
-    end
-
-    def OS.unix?
-        !OS.windows?
-    end
-
-    def OS.linux?
-        OS.unix? and not OS.mac?
-    end
-  end
-
-  shared_folder_disabled = false
-
-  if OS.windows?
-   shared_folder_disabled = true
-  end
-
   # Vm
   config.vm.box           = app[:box]
   config.vm.box_version   = app[:box_version]
-  config.vm.hostname      = app[:name]
+  config.vm.hostname      = app[:name] + '.dev'
   config.vm.network       'private_network', ip: '192.168.50.4'
   config.vm.define        'localhost' do |localhost| end
 
   # Share the whole project if not windows;
   config.vm.synced_folder '.', '/srv/app',
     type: 'nfs',
-    mount_options: ['nolock', 'actimeo=1', 'fsc'],
-    disabled: shared_folder_disabled
+    mount_options: ['nolock', 'actimeo=1', 'fsc']
 
-  # Use syncfolder because windows sucks
-  if OS.windows?
-    config.vm.synced_folder "database/", "/srv/database"
-    config.vm.synced_folder "ansible/", "/srv/ansible"
-  else
-    config.vm.synced_folder 'database/', '/srv/database',
-      type: 'nfs',
-      mount_options: ['nolock', 'actimeo=1', 'fsc']
+  config.vm.synced_folder 'database/', '/srv/database',
+    type: 'nfs',
+    mount_options: ['nolock', 'actimeo=1', 'fsc']
 
-    config.vm.synced_folder 'ansible/', '/srv/ansible',
-      type: 'nfs',
-      mount_options: ['nolock', 'actimeo=1', 'fsc']
-  end
+  config.vm.synced_folder 'ansible/', '/srv/ansible',
+    type: 'nfs',
+    mount_options: ['nolock', 'actimeo=1', 'fsc']
 
   # Vm - Provider - Virtualbox
   config.vm.provider :virtualbox do |virtualbox|
@@ -106,7 +73,7 @@ Vagrant.configure(2) do |config|
   # Vm - Provision - Setup
   for playbook in ['ansible', 'app']
     config.vm.provision playbook, type: 'ansible_local' do |ansible|
-      ansible.provisioning_path = '/srv/ansible'
+      ansible.provisioning_path = '/srv/app/ansible'
       ansible.playbook          = playbook + '.yml'
       ansible.inventory_path    = '/etc/ansible/hosts'
       ansible.tags              = ENV['ANSIBLE_TAGS']
@@ -124,18 +91,6 @@ Vagrant.configure(2) do |config|
               config.hostmanager.aliases += item + ' '
           end
       end
-  end
-
-  if OS.windows?
-      puts "Vagrant launched from windows."
-  elsif OS.mac?
-      puts "Vagrant launched from mac."
-  elsif OS.unix?
-      puts "Vagrant launched from unix."
-  elsif OS.linux?
-      puts "Vagrant launched from linux."
-  else
-      puts "Vagrant launched from unknown platform."
   end
 
 end

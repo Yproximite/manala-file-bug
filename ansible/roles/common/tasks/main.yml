@@ -5,30 +5,28 @@
   with_items:
       - htop
       - python-mysqldb
-      - zip
-      - unzip
 
 - name: Accept github hostkey because other solution didn't seems to work
   shell: ssh-keyscan -H github.com >> /etc/ssh/ssh_known_hosts
 
-- name: cache symfony 2
+- name: cache Symfony
   file: >
     path=/var/cache/symfony
     state=directory
   become: yes
 
-- name: logs symfony 2
+- name: logs Symfony
   file: >
     path=/var/logs/symfony
     state=directory
   become: yes
 
-- name: acl symfony 2
+- name: acl Symfony
   shell: >
     setfacl -R -m u:www-data:rwX -m u:app:rwX /var/cache/symfony /var/logs/symfony
   become: yes
 
-- name: acl default symfony 2
+- name: acl default Symfony
   shell: >
     setfacl -dR -m u:www-data:rwX -m u:app:rwX /var/cache/symfony /var/logs/symfony
   become: yes
