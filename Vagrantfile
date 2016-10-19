@@ -1,14 +1,12 @@
-#!/usr/bin/env bash
-
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
 app = {
-  :name        => 'test-reproduction.dev',
+  :name        => 'test-reproduction',
   :box         => 'manala/app-dev-debian',
   :box_version => '~> 3.0.0',
+  :box_memory  => 4096,
   :aliases     => ['test-reproduction.dev'],
-  :box_memory  => 4096
 }
 
 Vagrant.require_version '>= 1.8.4'
@@ -46,7 +44,7 @@ Vagrant.configure(2) do |config|
   # Vm
   config.vm.box           = app[:box]
   config.vm.box_version   = app[:box_version]
-  config.vm.hostname      = app[:name]
+  config.vm.hostname      = app[:name] + '.dev'
   config.vm.network       'private_network', ip: '192.168.50.4'
   config.vm.define        'localhost' do |localhost| end
 
@@ -106,7 +104,7 @@ Vagrant.configure(2) do |config|
   # Vm - Provision - Setup
   for playbook in ['ansible', 'app']
     config.vm.provision playbook, type: 'ansible_local' do |ansible|
-      ansible.provisioning_path = '/srv/ansible'
+      ansible.provisioning_path = '/srv/app/ansible'
       ansible.playbook          = playbook + '.yml'
       ansible.inventory_path    = '/etc/ansible/hosts'
       ansible.tags              = ENV['ANSIBLE_TAGS']
