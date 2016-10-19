@@ -25,7 +25,7 @@ help:
 # Environment #
 ###############
 
-## Setup environment & Install & Build application
+## Setup environment & Install
 setup:
 	vagrant up --no-provision
 	vagrant provision
@@ -58,40 +58,32 @@ provision-php: provision
 # Install #
 ###########
 
-install: install-git-hooks install-app
+## Install application
+install: install-git-hooks
 
 install-git-hooks:
 	wget --output-document=.git/hooks/pre-commit https://gist.githubusercontent.com/KuiKui/5d7912eb92bb658ed7f6d9bbfbb27b85/raw/52fd9c0d1a9fd3f65c8fedacb4e8de77acbc864a/pre-commit.sh
 	chmod +x .git/hooks/pre-commit
 
-install-app:
-	ansible-playbook ansible/app.yml
+######
+# Db #
+######
 
-update-app:
-	ansible-playbook ansible/app.yml -e db_reset=false
-
-###########
-# Prepare #
-###########
-
-init-db@dev:
+## Init db
+init-db:
 	app/console doctrine:database:create --if-not-exists
 	app/console doctrine:schema:update --force
 	yes | app/console doctrine:migration:migrate
 
-init-db@test:
-	app/console doctrine:database:create --if-not-exists --env=test
-	app/console doctrine:schema:update --force --env=test
-	yes | app/console doctrine:migration:migrate --env=test
+init-db@test: export SYMFONY_ENV = test
+init-db@test: init-db
 
-reset-db@dev:
+## Reset db
+reset-db:
 	app/console doctrine:database:drop --force --if-exists
 	app/console doctrine:database:create
 	app/console doctrine:schema:create
 	yes | app/console doctrine:migration:migrate
 
-reset-db@test:
-	app/console doctrine:database:drop --force --if-exists --env=test
-	app/console doctrine:database:create --env=test
-	app/console doctrine:schema:create --env=test
-	yes | app/console doctrine:migration:migrate --env=test
+reset-db@test: export SYMFONY_ENV = test
+reset-db@test: reset-db
